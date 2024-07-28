@@ -1,0 +1,19 @@
+---
+# tasks file for ansible-prometheus-tools
+#######Install node-exporter############
+  - name: create user
+    block:
+      - name: Add the user 'james' with a bash shell, appending the group 'admins' and 'developers' to the user's groups
+        user:
+          name: node_exporter
+          shell: /usr/bin/false
+#Copy file for install
+
+      - name: Copy file with owner and permissions
+        copy:
+          src: node_exporter-1.8.2.darwin-amd64.tar.gz
+          dest: ~
+
+
+
+            #####Iam working on it right NOW###
