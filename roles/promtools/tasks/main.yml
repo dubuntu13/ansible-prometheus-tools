@@ -3,7 +3,7 @@
 #######Install node-exporter############
   - name: create user
     block:
-      - name: Add the user 'james' with a bash shell, appending the group 'admins' and 'developers' to the user's groups
+      - name: Add user nologin for node_exporter
         user:
           name: node_exporter
           shell: /usr/bin/false
@@ -13,6 +13,9 @@
         copy:
           src: node_exporter-1.8.2.darwin-amd64.tar.gz
           dest: ~
+      - name: Check system information
+        shell:
+            "tar -xvzf ~/node_exporter-1.8.2.darwin-amd64.tar.gz"
 
 
 
