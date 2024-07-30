@@ -8,5 +8,5 @@ urls=(
 )
 
 for url in "${urls[@]}"; do
-	wget -p ./roles/promtools/files/ "$url"
+	wget -P ./roles/promtools/files/node_exporter/ "$url"
 done

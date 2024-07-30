@@ -8,15 +8,24 @@
           name: node_exporter
           shell: /usr/bin/false
 #Copy file for install
+      - name: Create directory for node-exporter file
+        file:
+          path: ~/node_exporter_need
+          state: directory
 
       - name: Copy file with owner and permissions
         copy:
-          src: node_exporter-1.8.2.darwin-amd64.tar.gz
-          dest: ~
-      - name: Check system information
+          src: {{ item }}
+          dest: ~/node_exporter_need
+          with_items:
+            - "node_exporter/*"
+
+      - name: extract file
         shell:
             "tar -xvzf ~/node_exporter-1.8.2.darwin-amd64.tar.gz"
 
-
+      - name: mv and chown file
+        shell:
+          "sudo mv ~/node_exporter-1.8.2.darwin-amd64 /opt/node_exporter && sudo chown -R node_exporter:node_exporter /opt/node_exporter"
 
             #####Iam working on it right NOW###
