@@ -1,31 +1,56 @@
 ---
 # tasks file for ansible-prometheus-tools
-#######Install node-exporter############
+###########Install node-exporter############
   - name: create user
     block:
-      - name: Add user nologin for node_exporter
-        user:
-          name: node_exporter
-          shell: /usr/bin/false
+      #      - name: Add user nologin for node_exporter
+      #        user:
+      #          name: node_exporter
+      #          shell: /usr/bin/false
 #Copy file for install
       - name: Create directory for node-exporter file
         file:
-          path: ~/node_exporter_need
+          path: /home/test/node_exporter_need
           state: directory
 
-      - name: Copy file with owner and permissions
+            #      - name: Create etc directory 
+            #        file:
+            #          path: /etc/node_exporter
+            #          state: directory
+
+
+      - name: Copy all needed file
         copy:
-          src: {{ item }}
-          dest: ~/node_exporter_need
-          with_items:
-            - "node_exporter/*"
+          src: "{{ item }}"
+          dest: /home/test/node_exporter_need
+        with_fileglob:
+          - "node_exporter/*"
 
       - name: extract file
         shell:
-            "tar -xvzf ~/node_exporter-1.8.2.darwin-amd64.tar.gz"
+            "tar xzf /home/test/node_exporter_need/*.tar.gz && sudo mv /home/test/*-amd64 /etc/node_exporter && sudo mv /home/test/node_exporter_need/node_exporter.service /etc/systemd/system/"
 
-      - name: mv and chown file
-        shell:
-          "sudo mv ~/node_exporter-1.8.2.darwin-amd64 /opt/node_exporter && sudo chown -R node_exporter:node_exporter /opt/node_exporter"
+    tags:
+     - install_nodexprt
+
+###########Restart & enable#################
+
+  - name: restart services
+    block:
+      - name: restart node_exporter
+        service:
+          name: node_exporter
+          state: restarted
+          daemon_reload: true
+            
+           
+      - name: enable node_exporter
+        service:
+          name: node_exporter
+          enabled: true
+
+    tags:
+     - install_nodexprt
+     - restart_nodexprt
 
             #####Iam working on it right NOW###

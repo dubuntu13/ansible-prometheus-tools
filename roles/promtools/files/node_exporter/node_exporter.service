@@ -4,10 +4,10 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=node_exporter
-Group=node_exporter
-Type=simple
-ExecStart=/opt/node_exporter/node_exporter --collector.systemd
+ExecStart=/etc/node_exporter/node_exporter \
+  --web.listen-address=:9200
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
+
