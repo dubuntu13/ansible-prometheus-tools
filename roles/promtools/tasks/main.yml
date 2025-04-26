@@ -3,36 +3,85 @@
 ###########Install node-exporter############
   - name: create user
     block:
-      #      - name: Add user nologin for node_exporter
-      #        user:
-      #          name: node_exporter
-      #          shell: /usr/bin/false
+      - name: Add user nologin for node_exporter
+        user:
+          name: node_exporter
+          shell: /usr/bin/false
 #Copy file for install
       - name: Create directory for node-exporter file
         file:
-          path: /home/test/node_exporter_need
+          path: /home/devops/node_exporter_need
           state: directory
 
-            #      - name: Create etc directory 
-            #        file:
-            #          path: /etc/node_exporter
-            #          state: directory
+#      - name: Create etc directory 
+#        file:
+#          path: /etc/node_exporter
+#          state: directory
 
 
       - name: Copy all needed file
         copy:
           src: "{{ item }}"
-          dest: /home/test/node_exporter_need
+          dest: /home/devops/node_exporter_need
         with_fileglob:
           - "node_exporter/*"
 
       - name: extract file
         shell:
-            "tar xzf /home/test/node_exporter_need/*.tar.gz && sudo mv /home/test/*-amd64 /etc/node_exporter && sudo mv /home/test/node_exporter_need/node_exporter.service /etc/systemd/system/"
+            "rm -rf /etc/node_exporter* && tar xzf /home/devops/node_exporter_need/*.tar.gz && sudo cp -r /home/devops/node_exporter-1.8.2.linux-amd64/ /etc/node_exporter && sudo mv /home/devops/node_exporter_need/node_exporter.service /etc/systemd/system/"
 
     tags:
      - install_nodexprt
 
+###########Install node-exporter############
+  - name: create user
+    block:
+      - name: Add user nologin for elastic_exporter
+        user:
+          name: elastic_exporter
+          shell: /usr/bin/false
+#Copy file for install
+      - name: Create directory for node-exporter file
+        file:
+          path: /home/devops/elastic_exporter_need
+          state: directory
+
+#      - name: Create etc directory 
+#        file:
+#          path: /etc/node_exporter
+#          state: directory
+
+
+      - name: Copy all needed file
+        copy:
+          src: "{{ item }}"
+          dest: /home/devops/elastic_exporter_need
+        with_fileglob:
+          - "elastic_exporter/*"
+          
+      - name: extract file
+        shell:
+            "tar xzf /home/devops/elastic_exporter_need/*.tar.gz && sudo cp -r /home/devops/elasticsearch_exporter-1.9.0.linux-amd64/ /etc/elastic_exporter && sudo mv /home/devops/elastic_exporter_need/elastic_exporter.service /etc/systemd/system/"
+
+    tags:
+     - install_elasticxprt
+###########Restart & enable#################
+
+  - name: restart services elastic exporter
+    block:
+      - name: restart elastic_exporter
+        service:
+          name: elastic_exporter
+          state: restarted
+          daemon_reload: true
+            
+           
+      - name: enable elastic_exporter
+        service:
+          name: elastic_exporter
+          enabled: true
+    tags:
+     - install_elasticxprt
 ###########Restart & enable#################
 
   - name: restart services
@@ -53,4 +102,4 @@
      - install_nodexprt
      - restart_nodexprt
 
-            #####Iam working on it right NOW###
+#####Iam working on it right NOW###

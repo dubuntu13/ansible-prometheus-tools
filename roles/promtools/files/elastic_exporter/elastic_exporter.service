@@ -1,0 +1,13 @@
+[Unit]
+Description=elasticsearch Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/etc/elastic_exporter/elastic_exporter \
+  --web.listen-address=:9114
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

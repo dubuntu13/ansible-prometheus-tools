@@ -1,0 +1,113 @@
+import com.github.mgk.gradle.*
+
+buildscript {
+    ext {
+        es_version = version.replaceAll(/\.[0-9]+(|-.+)$/, "")
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.elasticsearch.gradle:build-tools:${es_version}"
+        classpath group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
+        classpath group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0'
+        classpath group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.0'
+        classpath group: 'javax.activation', name: 'activation', version: '1.1.1'
+    }
+}
+
+plugins {
+    id "java"
+    id "checkstyle"
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'elasticsearch.esplugin'
+apply plugin: 'elasticsearch.testclusters'
+
+// Uncomment if you want to use: System.out.println("Emergency!");
+// Logs are found in build/testcluster/integTest-*/logs/ folder.
+//forbiddenApis {
+//    ignoreFailures = true
+//}
+
+// No unit tests in this plugin
+test.enabled = false
+
+println "Host: " + java.net.InetAddress.getLocalHost()
+println "Gradle: " + gradle.gradleVersion + " JVM: " + org.gradle.internal.jvm.Jvm.current() + " Groovy: " + GroovySystem.getVersion()
+println "Build: group: '${project.group}', name: '${project.name}', version: '${project.version}'"
+println "Timestamp: " + java.time.Instant.now().atZone(java.time.ZoneId.systemDefault()).toString()
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+ext {
+    versions = [
+        "elasticsearch": es_version,
+        "prometheus"   : "0.8.0",
+        "log4j"        : "2.17.1",
+        "junit"        : "4.12"
+    ]
+}
+
+configurations {
+    runtime
+    releaseJars {
+        extendsFrom runtime
+        exclude group: "org.elasticsearch"
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+        exclude group: "org.apache.logging.log4j"
+    }
+}
+
+dependencies {
+    implementation "org.elasticsearch:elasticsearch:${versions.elasticsearch}"
+    implementation "io.prometheus:simpleclient:${versions.prometheus}"
+    implementation "io.prometheus:simpleclient_common:${versions.prometheus}"
+    implementation "org.apache.logging.log4j:log4j-api:${versions.log4j}"
+    testImplementation (group: 'junit', name: 'junit', version: "${versions.junit}") {
+        exclude group:'org.hamcrest' //also included in ES test framework
+    }
+    releaseJars "${project.group}:${project.name}:${project.version}"
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked,deprecation"
+}
+
+esplugin {
+    licenseFile rootProject.file('LICENSE.txt')
+    noticeFile rootProject.file('NOTICE.txt')
+    name pluginName
+    description pluginDescription
+    classname pluginClassname
+}
+
+testClusters.all {
+    numberOfNodes = 2
+
+// There does not seem to be any easy way how to setup custom cluster name.
+
+//    This worked in ES 7.4.x, but now results in:
+//    A problem occurred evaluating root project 'prometheus-exporter'.
+//    > Cannot set the property 'clusterName' because the backing field is final.
+//    clusterName = "PrometheusExporterITCluster"
+
+//    This does not work in ES 7.5.x too:
+//    Execution failed for task ':integTestRunner'.
+//    > Testclusters does not allow the following settings to be changed:[cluster.name] for node{::integTest-0}
+//    setting 'cluster.name', 'PrometheusExporterITCluster'
+}
+
+checkstyle {
+    configFile = new File(rootDir, "checkstyle.xml")
+    toolVersion = "8.2"
+}

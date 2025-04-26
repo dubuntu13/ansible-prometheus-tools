@@ -1,8 +1,0 @@
-frontend prometheus
-   bind *:8404
-#   option http
-   http-request use-service prometheus-exporter if { path /metrics }
-   stats enable
-   stats uri /stats
-   stats refresh 10s
-
